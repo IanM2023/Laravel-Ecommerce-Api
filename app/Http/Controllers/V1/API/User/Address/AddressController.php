@@ -1,35 +1,37 @@
 <?php
 
-namespace App\Http\Controllers\V1\API;
+namespace App\Http\Controllers\V1\API\User\Address;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\V1\Address\StoreAddressRequest;
-use App\Http\Requests\V1\Address\UpdateAddressRequest;
-use App\Http\Resources\V1\Address\AddressResource;
+use App\Http\Requests\V1\User\Address\StoreAddressRequest;
+use App\Http\Requests\V1\User\Address\UpdateAddressRequest;
+use App\Http\Resources\V1\User\Address\AddressResource;
 use App\Models\Address;
 use App\Models\Notification;
+use App\Traits\AuthTrait;
 use App\Traits\NotificationMessagesTrait;
 use Illuminate\Http\Request;
 
 class AddressController extends Controller
 {
 
-    use NotificationMessagesTrait;
+    use NotificationMessagesTrait, AuthTrait;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $address = Address::where('user_id', auth()->user()->id)->get();
+
+        $address = Address::where('user_id', auth()->user()->id)
+            ->orderByDesc('is_default')
+            ->get();
 
         if($address->isEmpty()) {
-            return response()->json(['message' => 'No address found'], 404);
+            return response()->failed([], 'No Address found', 404);
         }
 
-        return response()->json([
-            'message' => 'Fetch User Address successfully',
-            'data'    => AddressResource::collection($address)
-        ], 200);
+        return response()->success(AddressResource::collection($address), 'Fetch user address successfully', 200);
+
     }
 
     /**
@@ -63,10 +65,8 @@ class AddressController extends Controller
             $message['details']
         );
 
-        return response()->json([
-            'message' => 'User Address successfully saved',
-            'data'    => new AddressResource($data)
-        ], 200);
+        return response()->success(new AddressResource($data), 'User address successfully saved', 200);
+
     }
 
     /**
@@ -74,11 +74,13 @@ class AddressController extends Controller
      */
     public function show(string $id)
     {
-        $address = Address::findOrFail($id);
-        return response()->json([
-            'message' => 'User Address successfully saved',
-            'data' => new AddressResource($address)
-        ], 200);
+        $userId = auth()->user()->id;
+
+        $address = Address::where('user_id', $userId)
+                ->whereKey($id)
+                ->firstOrFail();
+        
+        return response()->success(new AddressResource($address), 'Get user address', 200);
     }
 
     /**
@@ -101,10 +103,7 @@ class AddressController extends Controller
             $message['details']
         );
     
-        return response()->json([
-            'message' => 'User address updated successfully',
-            'data' => $address->fresh()
-        ], 200);
+        return response()->success($address->fresh(), 'User address updated successfully', 200);
     }
 
     /**
@@ -112,7 +111,7 @@ class AddressController extends Controller
      */
     public function destroy(Address $address)
     {
-        $address->delete();
+        $address->deleteAndReassignDefault();
 
         $message = $this->addressDeletedMessage();
 
@@ -122,9 +121,8 @@ class AddressController extends Controller
             $message['details']
         );
 
-        return response()->json([
-            'message' => 'User address deleted successfully',
-        ], 200);
+        return response()->success([], 'User address deleted successfully', 200);
+
     }
 
     public function setDefault($id)
@@ -138,9 +136,7 @@ class AddressController extends Controller
     
         // 2. If already default → early return
         if ($address->is_default) {
-            return response()->json([
-                'message' => 'This address is already set as default',
-            ], 200);
+            return response()->success([], 'This address is already set as default', 201);
         }
     
         // 3. Remove default from other addresses
@@ -151,9 +147,7 @@ class AddressController extends Controller
         // 4. Set selected address as default
         $address->update(['is_default' => true]);
     
-        return response()->json([
-            'message' => 'Default address updated successfully',
-        ], 200);
+        return response()->success([], 'Default address updated successfully', 200);
     }
     
 }

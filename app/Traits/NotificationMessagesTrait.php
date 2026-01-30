@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 trait NotificationMessagesTrait
 {
-
+    // Address
     protected function addressCreatedMessage():array
     {
         return [
@@ -28,6 +28,14 @@ trait NotificationMessagesTrait
         return [
             'type' => 'Address Remove',
             'details' => 'User Remove the address new address'
+        ];
+    }
+    // User
+    protected function userUpdateMessage():array
+    {
+        return [
+            'type' => 'User Profile',
+            'details' => 'User Profile updated successfully'
         ];
     }
 }

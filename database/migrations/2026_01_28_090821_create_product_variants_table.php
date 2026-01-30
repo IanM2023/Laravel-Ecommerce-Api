@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table) {
+        Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
-            $table->string('role_name')->unique();
-            $table->integer('status')->comment('0 => active | 1 => inactive');
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->string('sku')->unique();
+            $table->decimal('price', 10 ,2);
+            $table->integer('status')->default(0)->comment('0 => active | 1 => disabled');
             $table->timestamps();
             $table->softDeletes();
-
         });
     }
 
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('roles');
+        Schema::dropIfExists('product_variants');
     }
 };

@@ -11,49 +11,50 @@ use App\Models\Baranggay;
 use App\Models\City;
 use App\Models\Province;
 use App\Models\Region;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
-
     public function regionList()
     {
         $regions = Region::all();
-
-        return response()->json([
-            'message' => 'Regions fetched successfully',
-            'data' => RegionResource::collection($regions),
-        ]);
+        
+        return response()->success(RegionResource::collection($regions), 'Regions fetched successfully' , 200);
     }
 
     public function provinceList($code) 
     {    
         $provinces = Province::where('region_code', $code)->get();
 
-        return response()->json([
-            'message' => 'Regions fetched successfully',
-            'data' => ProvinceResource::collection($provinces),
-        ]);
+        $this->emptyCode($provinces);
+
+        return response()->success(ProvinceResource::collection($provinces), 'Province fetched successfully' , 200);
     }
 
     public function cityList($code)
     {
         $cities = City::where('province_code', $code)->get();
 
-        return response()->json([
-            'message' => 'Cities fetched successfully',
-            'data' => CityResource::collection($cities),
-        ]);
+        $this->emptyCode($cities);
+
+        return response()->success(CityResource::collection($cities), 'Cities fetched successfully' , 200);
     }
 
     public function barangayList($code)
     {
         $brgys = Baranggay::where('city_munic_code', $code)->get();
-
-        return response()->json([
-            'message' => 'Baranggay list fetched successfully',
-            'data' => BaranggayResource::collection($brgys),
-        ]);
+        
+        $this->emptyCode($brgys);
+        
+        return response()->success(BaranggayResource::collection($brgys), 'Baranggay list fetched successfully' , 200);
     }
 
+    private function emptyCode($code)
+    {
+        if($code->isEmpty())
+        {
+            abort(404);
+        }
+    }
 }

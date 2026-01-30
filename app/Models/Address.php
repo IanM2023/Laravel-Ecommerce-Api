@@ -39,4 +39,25 @@ class Address extends Model
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
+    // Address.php
+    public function deleteAndReassignDefault()
+    {
+        $userId = $this->user_id;
+        $wasDefault = $this->is_default;
+
+        if ($wasDefault) {
+            $this->update(['is_default' => false]);
+        }
+
+        $this->delete();
+
+        if ($wasDefault) {
+            self::where('user_id', $userId)
+                ->oldest()
+                ->first()
+                ?->update(['is_default' => true]);
+        }
+    }
+
+
 }
