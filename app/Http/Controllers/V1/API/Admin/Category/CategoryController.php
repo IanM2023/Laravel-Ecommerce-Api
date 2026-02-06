@@ -6,20 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\Admin\Category\StoreCategoryRequest;
 use App\Http\Resources\V1\Admin\Category\CategoryResource;
 use App\Models\Category;
+use App\Services\V1\Admin\CategoryService;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    protected CategoryService $categoryService;
+    
+
+    public function __construct(CategoryService $categoryService)
+    {
+        $this->categoryService = $categoryService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $categories = Category::root()
-            ->filter($request)
-            ->with('childrenRecursive')
-            ->paginate($request->per_page);
-        return CategoryResource::collection($categories);
+        return CategoryResource::collection($this->categoryService->fetchAllCategory($request->all()));
     }
     
     /**
@@ -27,22 +31,25 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request)
     {
-        Category::create($request->validated());
-        return response()->success([], 'Category created successfully', 200);
+        $category = $this->categoryService->createCategory(
+            $request->validated()
+        );
+    
+        return response()->success(
+            new CategoryResource($category),
+            'Category created successfully',
+            201
+        );
     }
+    
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $category = Category::root()
-            ->where('id', $id)
-            ->with('childrenRecursive')
-            ->firstOrFail();
-    
         return response()->success(
-            new CategoryResource($category),
+            new CategoryResource($this->categoryService->getByIDCategory($id)),
             'Show Categories by id successfully',
             200
         );
@@ -53,14 +60,7 @@ class CategoryController extends Controller
      */
     public function update(StoreCategoryRequest $request, $id)
     {
-        $request->validated();
-    
-        $category = Category::findOrFail($id);
-    
-        $category->update([
-            'name' => $request->name,
-        ]);
-        $category->load('childrenRecursive');
+        $category = $this->categoryService->updateCategory($request->validated(), $id); 
         return response()->success(
             new CategoryResource($category),
             'Category updated successfully',
@@ -68,7 +68,6 @@ class CategoryController extends Controller
         );
     }
     
-
     /**
      * Remove the specified resource from storage.
      */

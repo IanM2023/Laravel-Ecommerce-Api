@@ -35,20 +35,27 @@ class Category extends Model
         return $query->whereNull('parent_id');
     }
 
-    public function scopeFilter($query, $request)
+    public function scopeFilter($query, array $filters)
     {
-        return $query->when($request->filled('name'), function ($q) use ($request) {
-            $q->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->name}%")
-                  ->orWhereHas('childrenRecursive', function ($childQuery) use ($request) {
-                      $childQuery->where('name', 'like', "%{$request->name}%");
+        return $query->when(!empty($filters['name']), function ($q) use ($filters) {
+            $q->where(function ($q) use ($filters) {
+                $q->where('name', 'like', "%{$filters['name']}%")
+                  ->orWhereHas('childrenRecursive', function ($childQuery) use ($filters) {
+                      $childQuery->where('name', 'like', "%{$filters['name']}%");
                   });
             });
         });
     }
+    
 
     public function countProduct()
     {
         return Category::root()->whereNotNull('parent_id')->count();
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
 }

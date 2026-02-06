@@ -13,10 +13,39 @@ class ProductVariant extends Model
 
     protected $table = 'product_variants';
 
+    protected $hidden = [
+        'deleted_at'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     protected $fillable = [
         'product_id',
         'sku',
         'price',
         'status'
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public static function storeProductVariant(array $data)
+    {
+        return self::create([
+            'product_id'        => $data['product_id'],
+            'sku'               => $data['sku'],
+            'price'             => $data['price'],
+            'status'            => $data['status'],
+        ]);
+    }
+
+    public function inventory()
+    {
+        return $this->hasOne(Inventory::class);
+    }
 }
