@@ -13,7 +13,6 @@ class CategoryController extends Controller
 {
     protected CategoryService $categoryService;
     
-
     public function __construct(CategoryService $categoryService)
     {
         $this->categoryService = $categoryService;
@@ -42,7 +41,6 @@ class CategoryController extends Controller
         );
     }
     
-
     /**
      * Display the specified resource.
      */

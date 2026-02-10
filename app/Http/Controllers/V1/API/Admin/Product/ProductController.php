@@ -21,11 +21,11 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->success(ProductResource::collection(
-            $this->productService->fetchAllProduct()
-        ), 'fetch all products', 200);
+        return ProductResource::collection(
+            $this->productService->fetchAllProduct($request->only('per_page'))
+        );
     }
 
     /**

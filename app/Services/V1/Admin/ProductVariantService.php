@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\DB;
 
 class ProductVariantService
 {
+    protected AdminLoggerService $adminLogger;
+
+    public function __construct(AdminLoggerService $adminLogger)
+    {
+        $this->adminLogger = $adminLogger;
+    }
+
     public function fetchAllProductVariant()
     {
         return ProductVariant::latest()->get();
@@ -18,6 +25,12 @@ class ProductVariantService
 
             $productVariant = ProductVariant::storeProductVariant($data);
 
+            $this->adminLogger->log(
+                'Store',
+                $productVariant,
+                'Created a new product variant'
+            );
+
             return $productVariant;
         });
     }
@@ -28,6 +41,12 @@ class ProductVariantService
 
             $productVariant->update($data);
 
+            $this->adminLogger->log(
+                'Store',
+                $productVariant,
+                'Updated product variant'
+            );
+
             return $productVariant->fresh();
 
         });
@@ -36,6 +55,13 @@ class ProductVariantService
     public function deleteProductVariant(ProductVariant $productVariant)
     {
         return DB::transaction(function () use ($productVariant) {
+
+            $this->adminLogger->log(
+                'Deleted',
+                $productVariant,
+                'Deleted product variant'
+            );
+
             $productVariant->delete();
         });
     }

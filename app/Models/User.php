@@ -88,4 +88,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Role::class);
     }
 
+    public function adminLog()
+    {
+        return $this->hasOne(AdminLog::class);
+    }
+
 }

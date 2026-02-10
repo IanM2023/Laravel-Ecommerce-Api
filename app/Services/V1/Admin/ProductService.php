@@ -9,9 +9,16 @@ use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
-    public function fetchAllProduct()
+    protected AdminLoggerService $adminLogger;
+
+    public function __construct(AdminLoggerService $adminLogger)
     {
-        return Product::with('categories')->latest()->get();
+        $this->adminLogger = $adminLogger;
+    }
+
+    public function fetchAllProduct(array $data)
+    {
+        return Product::with('categories')->latest()->paginate($data['per_page'] ?? 10);
     }
 
     public function showById(String $id)
@@ -29,6 +36,12 @@ class ProductService
            
             $product->categories()->sync($data['category_id']);
 
+            $this->adminLogger->log(
+                'Store',
+                $product,
+                'Created a new product'
+            );
+
             return $product;
         });
     }
@@ -42,6 +55,12 @@ class ProductService
             );
            
             $product->categories()->sync($data['category_id']);
+
+            $this->adminLogger->log(
+                'Update',
+                $product,
+                'Updated the product item'
+            );
 
             return $product;
         });

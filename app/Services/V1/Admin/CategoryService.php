@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\DB;
 
 class CategoryService
 {
+    protected AdminLoggerService $adminLogger;
+
+    public function __construct(AdminLoggerService $adminLogger)
+    {
+        $this->adminLogger = $adminLogger;
+    }
 
     public function fetchAllCategory(array $data)
     {
@@ -22,7 +28,15 @@ class CategoryService
     {
         return DB::transaction(function () use ($data) {
             
-            return Category::create($data);
+            $category = Category::create($data);
+
+            $this->adminLogger->log(
+                'Store',
+                $category,
+                'Create a new category'
+            );
+
+            return $category;
             
         });
     }
@@ -45,6 +59,13 @@ class CategoryService
                 'name' => $data['name'],
             ]);
             $category->load('childrenRecursive');
+
+            
+            $this->adminLogger->log(
+                'Update',
+                $category,
+                'Updated category ' . $data['name'] 
+            );
 
             return  $category;
         });

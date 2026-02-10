@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Inventory;
 
 class ProductVariant extends Model
 {
@@ -29,11 +30,6 @@ class ProductVariant extends Model
         'status'
     ];
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
     public static function storeProductVariant(array $data)
     {
         return self::create([
@@ -44,8 +40,24 @@ class ProductVariant extends Model
         ]);
     }
 
+    
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
     public function inventory()
     {
-        return $this->hasOne(Inventory::class);
+        return $this->hasMany(Inventory::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class, 'variant_id')->latest();
+    }
+
+    public function primaryImage()
+    {
+        return $this->hasOne(ProductImage::class, 'variant_id')->where('is_primary', 1);
     }
 }

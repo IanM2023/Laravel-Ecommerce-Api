@@ -19,4 +19,30 @@ class ProductImage extends Model
         'path',
         'is_primary'
     ];
+
+    protected $hidden = [
+        'deleted_at'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function logs()
+    {
+        return $this->morphMany(AdminLog::class, 'loggable');
+    }
+
+
 }
