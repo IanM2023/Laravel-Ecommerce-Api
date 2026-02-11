@@ -11,6 +11,7 @@ use App\Http\Controllers\V1\API\Admin\UserAdmin\UserController as AdminUserContr
 use App\Http\Controllers\V1\API\User\Address\AddressController;
 use App\Http\Controllers\V1\API\LocationController;
 use App\Http\Controllers\V1\API\AuthController;
+use App\Http\Controllers\V1\API\Store\StoreProductController;
 use App\Http\Controllers\V1\API\User\Notification\NotificationController;
 use App\Http\Controllers\V1\API\User\UserController;
 use App\Models\ProductVariant;
@@ -54,6 +55,12 @@ Route::prefix('v1')->group(function () {
         });
     
     });
+
+    Route::prefix('store')->group(function () {
+        Route::get('/products', [StoreProductController::class, 'index']);
+        Route::get('/products/{product}', [StoreProductController::class, 'show']);
+    });
+    
 
 
     Route::get('/regionList', [LocationController::class, 'regionList']);

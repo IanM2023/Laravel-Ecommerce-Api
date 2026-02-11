@@ -44,5 +44,4 @@ class ProductImage extends Model
         return $this->morphMany(AdminLog::class, 'loggable');
     }
 
-
 }

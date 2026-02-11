@@ -53,4 +53,25 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
+
+    public static function storeAvailable()
+    {
+        return self::where('status', 'active')
+            ->whereHas('variants', function ($query) {
+                $query->where('status', 'active')
+                      ->whereHas('inventory', function ($q) {
+                          $q->where('quantity', '>', 0);
+                      });
+            })
+            ->with([
+                'categories',
+                'variants' => function ($query) {
+                    $query->where('status', 'active')
+                          ->with([
+                              'inventory',
+                              'images'
+                          ]);
+                }
+            ]);
+    }
 }
